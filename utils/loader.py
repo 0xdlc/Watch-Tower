@@ -5,13 +5,13 @@ from discord_webhook import DiscordWebhook, DiscordEmbed
 
 
 #MONGO DB CONNECTION----------------------------#
-cluster = MongoClient("mongodb+srv://mohamadkhzd:a4LlRT5zdAW8th1u@subs0.zegtlek.mongodb.net/?retryWrites=true&w=majority")
-db = cluster["datas"]
-collection = db["programs"]
+cluster = MongoClient("mongodb url")
+db = cluster[""]
+collection = db[""]
 def discord(title, description):
 
     webhook = DiscordWebhook(
-        url="https://discord.com/api/webhooks/1103661510162653305/Z5GQvXU4VqcCilQTFyBGEbZzp52gxL-XSme1cQF-ACrrlz-3v_z17tMJlF55aWfZSz0X",
+        url="discord webhook url",
         rate_limit_retry=True)
     embed = DiscordEmbed(
         title=title,
