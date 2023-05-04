@@ -8,9 +8,9 @@ from pymongo import MongoClient
 import json
 def main():
     # CONNECT TO MONGO CLUSTER
-    cluster = MongoClient("mongodb+srv://mohamadkhzd:a4LlRT5zdAW8th1u@subs0.zegtlek.mongodb.net/?retryWrites=true&w=majority")
-    db = cluster["datas"]
-    collection = db["programs"]
+    cluster = MongoClient("your mongodb url")
+    db = cluster[""]
+    collection = db[""]
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', required=True, default=False, metavar='url', type=str)
     args = parser.parse_args()
