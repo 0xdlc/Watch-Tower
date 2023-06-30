@@ -33,7 +33,7 @@ def bugcrowd_assets(program,index):
                 assets.append(j['name'])
          return assets
     else:
-        print('Δ Index number is incorrect, Fixing...')
+        print('[+] Index number is incorrect, Fixing...')
         process = subprocess.check_output(["./utils/find_index.sh",program],text=True)
         temp = process.split(',')
         index = int(temp[0])
@@ -57,7 +57,7 @@ def h1_assets(program,index):
                 assets.append(i['attributes']['asset_identifier'])
          return assets         
     else:
-         print('[Δ] Index number is not correct, Fixing...')
+         print('[+] Index number is not correct, Fixing...')
          process = subprocess.check_output(["./utils/find_index.sh",program],text=True)
          temp = process.split(',')
          index = int(temp[0])
@@ -122,13 +122,13 @@ def FindDif(program,sub):
                     break
                 elif count==len(assets) :
                     update(str(i))
-                    print("Ψ Found a new target Ψ :"+ str(i))
+                    print("[*] Found a new target! :"+ str(i))
                     ChangeTitle = f"[+] New Target"
                     description = f'**Program: **{program}\n**Platform: **{platform}\n**Target: **{str(i)}'
                     discord(title=ChangeTitle ,description=description)
     #-----------------------------------------------------#
 
-    print(f"[Ξ]Looking for a new target in {program}...")
+    print(f"[+]Looking for a new target in {program}...")
     match platform:
         case 'hackerone':
             new_assets = h1_assets(program,index)
