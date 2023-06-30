@@ -10,8 +10,8 @@ def main():
     collection = db["programs"]
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', required=True, default=False, metavar='programs to watch', type=str)
-    parser.add_argument('-get', required=False, default=False, metavar='get assets of a program', type=str)
-    parser.add_argument('-sub',required=False,nargs='?', const='true', metavar='only subdomain watcher', type=bool)
+    parser.add_argument('-scope',required=False,nargs='?', const='true', metavar='Watch for new scope', type=bool)
+    parser.add_argument('-sub',required=False,nargs='?', const='true', metavar='Watch for new subdomains', type=bool)
     args = parser.parse_args()
     sub = False
     cidr = False
@@ -24,9 +24,11 @@ def main():
                   print(f"getting assets of {i}")
                   for j in collection.distinct("assets", {"program": f"{i}"}):
                        print(j)
-             if args.p:
+             if args.sub:
+                  sub_only(i)          
+             if args.scope:
                   print(f'[+] program {i} found in the database')
-                  FindDif(i,args.sub)                       
+                  FindDif(i)                       
        else:
              insert_Program(i,args.sub)
 if __name__ == '__main__':
