@@ -2,16 +2,17 @@ import subprocess
 import json
 from pymongo import MongoClient
 from discord_webhook import DiscordWebhook, DiscordEmbed
-
+import re
+import os
 
 #MONGO DB CONNECTION----------------------------#
-cluster = MongoClient("mongodb url")
-db = cluster[""]
-collection = db[""]
+cluster = MongoClient("mongodb+srv://mohamadkhzd:a4LlRT5zdAW8th1u@subs0.zegtlek.mongodb.net/?retryWrites=true&w=majority")
+db = cluster["datas"]
+collection = db["programs"]
 def discord(title, description):
 
     webhook = DiscordWebhook(
-        url="discord webhook url",
+        url="https://discord.com/api/webhooks/1103661510162653305/Z5GQvXU4VqcCilQTFyBGEbZzp52gxL-XSme1cQF-ACrrlz-3v_z17tMJlF55aWfZSz0X",
         rate_limit_retry=True)
     embed = DiscordEmbed(
         title=title,
@@ -32,7 +33,7 @@ def bugcrowd_assets(program,index):
                 assets.append(j['name'])
          return assets
     else:
-        print('Δ Index number is incorrect, Fixing...')
+        print('[+] Index number is incorrect, Fixing...')
         process = subprocess.check_output(["./utils/find_index.sh",program],text=True)
         temp = process.split(',')
         index = int(temp[0])
@@ -56,7 +57,7 @@ def h1_assets(program,index):
                 assets.append(i['attributes']['asset_identifier'])
          return assets         
     else:
-         print('[Δ] Index number is not correct, Fixing...')
+         print('[+] Index number is not correct, Fixing...')
          process = subprocess.check_output(["./utils/find_index.sh",program],text=True)
          temp = process.split(',')
          index = int(temp[0])
@@ -68,15 +69,77 @@ def h1_assets(program,index):
          else:
              bugcrowd_assets(program,index)
 
+def sub_only(program):
+    assets = collection.distinct("assets", {"program": f"{program}"})
+    scopedir = os.path.expanduser('~/scopes')
+    print("[+] Finding The Imposter..")
+    for i in assets:
+        reg = r"\*.+\.[^\s]+"
+        if re.search(reg,i) != None:
+            s = i.split('*.')[1]
+            filedir = f"{scopedir}/{program}/{s}.subfinder.new"
+            print(s)
+            subprocess.call(["subfinder","-silent","-d",s,"-o",filedir])
+            subprocess.call(["sort","-o",filedir,filedir])
+            new = subprocess.check_output(["comm","-23",filedir,f"{scopedir}/{program}/{s}.subfinder"],text=True)
+            if len(new) > 1:
+                httpx = subprocess.check_output(["httpx","-silent","-sc","-title","",f"{scopedir}/{program}/{s}.subfinder"],text=True)
+                ChangeTitle = f"[+] New Asset"
+                description = f'**Program: **{program}\n**Assets: **{str(new)}'
+                discord(title=ChangeTitle ,description=description)
+                f = open(f"{scopedir}/{program}/{s}.subfinder", "a+")
+                f.write(new)
+                f.close()
+                #first see if you get the same amount of subs , then do the dif for httpx resualts
+                subprocess.run(["sort","-o",f"{scopedir}/{program}/{s}.subfinder",f"{scopedir}/{program}/{s}.subfinder"])
+            subprocess.run(["rm",filedir])
+def costume_httpx(file_directory):
+    print("starting costume httpx")
+    dir = os.path.expanduser(file_directory)
+    Header = "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:108.0) Gecko/20100101 Firefox/108.0"
+    subprocess.call(["httpx","-silent","-l",f"{dir}","-o",f"{dir}.httpx.tmp","-title","-status-code","-cdn","-tech-detect","-H",Header,"-threads","3"])
+    subprocess.call(["sort","-o",f"{dir}.httpx.tmp",f"{dir}.httpx.tmp"])
+    new = subprocess.check_output(["comm","-23",f"{dir}.httpx.tmp",f"{dir}.httpx"],text=True)
+    if len(new) > 1:
+        ChangeTitle = f"[+] New Changes in Httpx"
+        description = f'{str(new)}'
+        discord(title=ChangeTitle ,description=description)
+        f = open(f"{dir}.httpx", "a+")
+        f.write(new)
+        f.close()
+    subprocess.run(["rm",f"{dir}.httpx.tmp"])
 
-def FindDif(program):
-    
 
+def httpx(program):
+    assets = collection.distinct("assets", {"program": f"{program}"})
+    scopedir = os.path.expanduser(f'~/scopes/{program}')
+    Header = "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:108.0) Gecko/20100101 Firefox/108.0"        
+    for i in assets:
+        reg = r"\*.+\.[^\s]+"
+        if re.search(reg,i) != None:
+            s = i.split('*.')[1]
+            filedir = f"{scopedir}/{s}.httpx.new"
+            subprocess.call(["httpx","-silent","-l",f"{scopedir}/{s}.subfinder","-o",filedir,"-title","-status-code","-cdn","-tech-detect","-H",Header,"-threads","3"])
+            subprocess.call(["sort","-o",filedir,filedir])
+            new = subprocess.check_output(["comm","-23",filedir,f"{scopedir}/{s}.httpx"],text=True)
+            if len(new) > 1:
+                ChangeTitle = f"[+] New Alive Asset (Httpx)"
+                description = f'**Program: **{program}\n**Assets: **{str(new)}'
+                discord(title=ChangeTitle ,description=description)
+                f = open(f"{scopedir}/{s}.httpx", "a+")
+                f.write(new)
+                f.close()
+                subprocess.run(["sort","-o",f"{scopedir}/{s}.httpx",f"{scopedir}/{s}.httpx"])
+            subprocess.run(["rm",filedir])
+
+
+def FindDif(program):  
     # print(Name)        
     #-------------------------------# 
     platform = collection.distinct("platform", {"program": f"{program}"})[0]
     index = collection.distinct("index", {"program": f"{program}"})[0]
     assets = collection.distinct("assets", {"program": f"{program}"})
+
 
     #----V Updating resource file V--------$
     print ("[+] Updating the source file...")
@@ -95,15 +158,14 @@ def FindDif(program):
                 if str(i) == str(j):   
                     break
                 elif count==len(assets) :
-                    # YOU CAN ADD YOUR DISCORD WEBHOOL HERE:
                     update(str(i))
-                    print("Ψ Found a new target Ψ :"+ str(i))
+                    print("[*] Found a new target! :"+ str(i))
                     ChangeTitle = f"[+] New Target"
                     description = f'**Program: **{program}\n**Platform: **{platform}\n**Target: **{str(i)}'
                     discord(title=ChangeTitle ,description=description)
     #-----------------------------------------------------#
 
-    print(f"[Ξ]Looking for a new target in {program}...")
+    print(f"[+]Looking for a new target in {program}...")
     match platform:
         case 'hackerone':
             new_assets = h1_assets(program,index)
@@ -121,15 +183,13 @@ def FindDif(program):
         #     continue
 
 
-
-def insert_Program(program):
+def insert_Program(program,opt):
     print(f"[+] Adding {program} to your WatchScope...")
     #----------------------------#
     process = subprocess.check_output(["./utils/find_index.sh",program], text=True)
     temp = process
     temp = temp.split(',')
     index = int(temp[0])
-    print(index)
     platform = str(temp[1])
     if platform == 'hackerone':
         assets = h1_assets(program,index)
@@ -166,3 +226,18 @@ def insert_Program(program):
             assets.append(i['endpoint'])
         collection.insert_one({"program":f"{program}","index":index,"platform":f"{platform}","assets":assets})
         print('Done.')        
+    if opt == True:
+        scopedir = os.path.expanduser('~/scopes')
+        print("[+] Adding subdomins to the database..")
+        subprocess.run(["mkdir",f"{scopedir}/{program}"])
+        assets = collection.distinct("assets", {"program": f"{program}"})
+        for i in assets:
+            reg = r"\*.+\.[^\s]+"
+            if re.search(reg,i) != None:
+                s = i.split('*.')[1]
+                print(s)
+                subprocess.run(["subfinder","-silent","-d",s,"-o",f"{scopedir}/{program}/{s}.subfinder"])
+                subprocess.run(["nice_httpx",f"{scopedir}/{program}/{s}.subfinder",f"{scopedir}/{program}/{s}.httpx"])
+
+
+
