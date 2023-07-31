@@ -68,6 +68,19 @@ def h1_assets(program,index):
             return h1_assets(program,index)
          else:
              bugcrowd_assets(program,index)
+def dnsx(subs):
+    print("[INFO]Starting dnsx...")
+    dx = subprocess.Popen(["dnsx","-l",subs,"-silent","-resp-only"],stdout=subprocess.PIPE)
+    ips = subprocess.check_output(["cut-cdn","-silent"],stdin=dx.stdout)
+    s = ips.split("\n")
+    newips = []
+    for i in s:
+        try:
+            subprocess.check_output(["grep",i])
+        except:
+            newips.append(i)
+    print(newips)
+    discord(title="[INFO] IPs from the new assets(DNSX):" ,description=f"All the IPs:{ips}\nNew IPs:{newips}")
 
 def sub_only(program):
     assets = collection.distinct("assets", {"program": f"{program}"})
@@ -83,6 +96,8 @@ def sub_only(program):
             subprocess.call(["sort","-o",filedir,filedir])
             new = subprocess.check_output(["comm","-23",filedir,f"{scopedir}/{program}/{s}.subfinder"],text=True)
             if len(new) > 1:
+                #--running dnsx on the new ones:
+                dnsx(new)
                 ChangeTitle = f"[+] New Asset"
                 description = f'**Program: **{program}\n**Assets: **{str(new)}'
                 discord(title=ChangeTitle ,description=description)
@@ -92,7 +107,49 @@ def sub_only(program):
                 #first see if you get the same amount of subs , then do the dif for httpx resualts
                 subprocess.run(["sort","-o",f"{scopedir}/{program}/{s}.subfinder",f"{scopedir}/{program}/{s}.subfinder"])
             subprocess.run(["rm",filedir])
-            
+
+
+def costume_httpx(file_directory):
+    print("[INFO]starting costume httpx")
+    dir = os.path.expanduser(file_directory)
+    Header = "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:108.0) Gecko/20100101 Firefox/108.0"
+    subprocess.call(["httpx","-silent","-l",f"{dir}","-o",f"{dir}.httpx.tmp","-title","-status-code","-cdn","-tech-detect","-H",Header,"-threads","3"])    
+    subprocess.call(["sort","-o",f"{dir}.httpx.tmp",f"{dir}.httpx.tmp"])
+    subprocess.call(["sort","-o",f"{dir}.httpx",f"{dir}.httpx"])
+    new = subprocess.check_output(["comm","-23",f"{dir}.httpx.tmp",f"{dir}.httpx"],text=True)
+    if len(new) > 1:
+        ChangeTitle = f"[+] New Changes in Httpx"
+        description = f'{str(new)}'
+        discord(title=ChangeTitle ,description=description)
+        f = open(f"{dir}.httpx", "a+")
+        f.write(new)
+        f.close()
+    subprocess.run(["rm",f"{dir}.httpx.tmp"])
+
+
+def httpx(program):
+    assets = collection.distinct("assets", {"program": f"{program}"})
+    scopedir = os.path.expanduser(f'~/scopes/{program}')
+    Header = "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:108.0) Gecko/20100101 Firefox/108.0"        
+    for i in assets:
+        reg = r"\*.+\.[^\s]+"
+        if re.search(reg,i) != None:
+            s = i.split('*.')[1]
+            filedir = f"{scopedir}/{s}.httpx.new"
+            subprocess.call(["httpx","-silent","-l",f"{scopedir}/{s}.subfinder","-o",filedir,"-title","-status-code","-cdn","-tech-detect","-H",Header,"-threads","3"])
+            subprocess.call(["sort","-o",filedir,filedir])
+            new = subprocess.check_output(["comm","-23",filedir,f"{scopedir}/{s}.httpx"],text=True)
+            if len(new) > 1:
+                ChangeTitle = f"[+] New Alive Asset (Httpx)"
+                description = f'**Program: **{program}\n**Assets: **{str(new)}'
+                discord(title=ChangeTitle ,description=description)
+                f = open(f"{scopedir}/{s}.httpx", "a+")
+                f.write(new)
+                f.close()
+                subprocess.run(["sort","-o",f"{scopedir}/{s}.httpx",f"{scopedir}/{s}.httpx"])
+            subprocess.run(["rm",filedir])
+
+
 def FindDif(program):  
     # print(Name)        
     #-------------------------------# 
@@ -197,7 +254,3 @@ def insert_Program(program,opt):
                 s = i.split('*.')[1]
                 print(s)
                 subprocess.run(["subfinder","-silent","-d",s,"-o",f"{scopedir}/{program}/{s}.subfinder"])
-                subprocess.run(["nice_httpx",f"{scopedir}/{program}/{s}.subfinder",f"{scopedir}/{program}/{s}.httpx"])
-
-
-
