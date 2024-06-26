@@ -1,3 +1,4 @@
+A tool that watches Hackerone and Bugcrowd for any Scope changes.
 # subfinder
 
 
