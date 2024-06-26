@@ -6,13 +6,13 @@ import re
 import os
 
 #MONGO DB CONNECTION----------------------------#
-cluster = MongoClient("mongodb+srv://mohamadkhzd:a4LlRT5zdAW8th1u@subs0.zegtlek.mongodb.net/?retryWrites=true&w=majority")
+cluster = MongoClient("YOUR MONGODB CLIENT")
 db = cluster["datas"]
 collection = db["programs"]
 def discord(title, description):
 
     webhook = DiscordWebhook(
-        url="https://discord.com/api/webhooks/1103661510162653305/Z5GQvXU4VqcCilQTFyBGEbZzp52gxL-XSme1cQF-ACrrlz-3v_z17tMJlF55aWfZSz0X",
+        url="DISCORD WEBHOOK",
         rate_limit_retry=True)
     embed = DiscordEmbed(
         title=title,
