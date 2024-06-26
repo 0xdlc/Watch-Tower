@@ -1,4 +1,4 @@
-A tool that watches Hackerone and Bugcrowd for any Scope changes.
+A tool that watches Hackerone and Bugcrowd for any Scope changes and sends a message to your discord. (via webhooks)
 # subfinder
 
 
