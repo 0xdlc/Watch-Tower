@@ -7,7 +7,7 @@ A tool that watches Hackerone and Bugcrowd for any Scope changes and sends a mes
 python set_permissions.py
 ```
 
-### Set the program on crontab or just manualy:
+### Set the program on crontab or just manualy run:
 ```
 python watcher.py -p "program1,program2,program3"
 ```
