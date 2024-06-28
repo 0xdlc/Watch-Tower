@@ -13,4 +13,4 @@ python watcher.py -p "program1,program2,program3"
 ```
 - Copy the Exact names from the bug-bounty platform
 - Supported platform are: hackerone and bugcrowd
-- you need a mongodb from atlas as well.
+- you need a mongodb account as well.
