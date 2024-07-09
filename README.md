@@ -15,4 +15,3 @@ python watcher.py -p "program1,program2,program3"
 - you need a mongodb server as well. (use atlas)
 
 
-! WILL REFACTOR THE CODE TO CLASS BASED INSTEAD OF FUNCTION BASED FOR PERFORMANCE AND READABILITY
